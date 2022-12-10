@@ -1,6 +1,7 @@
 import argparse
 from queue import LifoQueue, PriorityQueue, Queue
 import threading
+from random import choice, randint
 
 from itertools import zip_longest
 
@@ -80,6 +81,26 @@ class View:
             padding + worker.state, align="left", vertical="middle"
         )
         return Panel(align, height=5, title=title)
+
+class Producer(Worker):
+    def __init__(self, speed, buffer, products):
+        super().__init__(speed, buffer)
+        self.products = products
+
+    def run(self):
+        while True:
+            self.product = choice(self.products)
+            self.simulate_work()
+            self.buffer.put(self.product)
+            self.simulate_idle()
+            
+class Consumer(Worker):
+    def run(self):
+        while True:
+            self.product = self.buffer.get()
+            self.simulate_work()
+            self.buffer.task_done()
+            self.simulate_idle()
 
 def main(args):
     buffer = QUEUE_TYPES[args.queue]()
