@@ -1,4 +1,5 @@
-# python async_queues.py http://[C:\Users\LENOVO\OneDrive\Desktop\python\Queue-Simulation]:8000 --max-depth 5  
+# python -m http.server
+# python async_queues.py http://localhost:8000 --max-depth=4
 
 import argparse
 import asyncio
