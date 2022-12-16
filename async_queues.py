@@ -1,8 +1,10 @@
 import argparse
 import asyncio
 from collections import Counter
+from urllib.parse import urljoin
 
 import aiohttp
+from bs4 import BeautifulSoup
 
 async def main(args):
     session = aiohttp.ClientSession()
@@ -11,6 +13,18 @@ async def main(args):
         display(links)
     finally:
         await session.close()
+        
+async def fetch_html(session, url):
+    async with session.get(url) as response:
+        if response.ok and response.content_type == "text/html":
+            return await response.text()
+
+def parse_links(url, html):
+    soup = BeautifulSoup(html, features="html.parser")
+    for anchor in soup.select("a[href]"):
+        href = anchor.get("href").lower()
+        if not href.startswith("javascript:"):
+            yield urljoin(url, href)
 
 def parse_args():
     parser = argparse.ArgumentParser()
