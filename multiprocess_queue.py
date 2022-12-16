@@ -7,6 +7,8 @@ from hashlib import md5
 # from itertools import product
 from string import ascii_lowercase
 
+POISON_PILL = None
+
 class Combinations:
     def __init__(self, alphabet, length):
         self.alphabet = alphabet
@@ -56,6 +58,9 @@ class Worker(multiprocessing.Process):
     def run(self):
         while True:
             job = self.queue_in.get()
+            if job is POISON_PILL:
+                self.queue_in.put(POISON_PILL)
+                break
             if plaintext := job(self.hash_value):
                 self.queue_out.put(plaintext)
                 break
@@ -80,6 +85,8 @@ def main(args):
         combinations = Combinations(ascii_lowercase, text_length)
         for indices in chunk_indices(len(combinations), len(workers)):
             queue_in.put(Job(combinations, *indices))
+            
+    queue_in.put(POISON_PILL)
             
     while any(worker.is_alive() for worker in workers):
         try:
