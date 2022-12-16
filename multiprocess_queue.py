@@ -1,3 +1,5 @@
+# python multiprocess_queue.py a9d1cbf71942327e98b40cf5ef38a960
+
 import argparse
 import multiprocessing
 import queue
@@ -81,7 +83,7 @@ def main(args):
     for worker in workers:
         worker.start()
         
-    for text_length in range(1, args.max_length +1):
+    for text_length in range(1, args.max_length + 1):
         combinations = Combinations(ascii_lowercase, text_length)
         for indices in chunk_indices(len(combinations), len(workers)):
             queue_in.put(Job(combinations, *indices))
@@ -105,7 +107,7 @@ def parse_args():
     parser.add_argument("hash_value")
     parser.add_argument("-m", "--max-length", type=int, default=6)
     parser.add_argument(
-        "w",
+        "-w",
         "--num-workers",
         type=int,
         default=multiprocessing.cpu_count(),
