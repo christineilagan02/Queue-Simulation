@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 from hashlib import md5
 from itertools import product
@@ -23,11 +24,25 @@ class Combinations:
 
 def reverse_md5(hash_value, alphabet=ascii_lowercase, max_length=6):
     for length in range(1, max_length + 1):
-        for combination in product(alphabet, repeat=length):
+        for combination in Combinations(alphabet, repeat=length):
             text_bytes = "".join(combination).encode("utf-8")
             hashed = md5(text_bytes).hexdigest()
             if hashed == hash_value:
                 return text_bytes.decode("utf-8")
+
+class Worker(multiprocessing.Process):
+    def __init__(self, queue_in, queue_out, hash_value):
+        super().__init__(daemon=True)
+        self.queue_in = queue_in
+        self.queue_out = queue_out
+        self.hash_value = hash_value
+
+    def run(self):
+        while True:
+            job = self.queue_in.get()
+            if plaintext := job(self.hash_value):
+                self.queue_out.put(plaintext)
+                break
 
 def main():
     t1 = time.perf_counter()
