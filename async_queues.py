@@ -1,3 +1,5 @@
+# python async_queues.py http://[C:\Users\LENOVO\OneDrive\Desktop\python\Queue-Simulation]:8000 --max-depth 5  
+
 import argparse
 import asyncio
 import sys
@@ -11,13 +13,18 @@ from bs4 import BeautifulSoup
 class Job(NamedTuple):
     url: str
     depth: int = 1
+    
+    def _lt_(self, other):
+        if isinstance(other, Job):
+            return len(self.url) < len(other.url)
 
 async def main(args):
     session = aiohttp.ClientSession()
     try:
         links = Counter()
+        queue = asyncio.PriorityQueue()
         # queue = asyncio.LifoQueue()
-        queue = asyncio.Queue()
+        # queue = asyncio.Queue()
         tasks = [
             asyncio.create_task(
                 worker(
